@@ -22,7 +22,6 @@ namespace Esercizio_2
         public Form1()
         {
             InitializeComponent();
-
         }
 
         static void OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
@@ -54,7 +53,7 @@ namespace Esercizio_2
             {
                 case ResultReason.RecognizedSpeech:
                     Console.WriteLine($"RECOGNIZED: Text={speechRecognitionResult.Text}");
-                    
+
                     break;
                 case ResultReason.NoMatch:
                     Console.WriteLine($"NOMATCH: Speech could not be recognized.");
@@ -75,7 +74,6 @@ namespace Esercizio_2
 
         async static Task ConvertToAudio(string text)
         {
-            
             var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
 
             // The language of the voice that speaks.
@@ -83,14 +81,9 @@ namespace Esercizio_2
 
             using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
             {
-                //string text = textBox2.Text;
-
                 var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
                 OutputSpeechSynthesisResult(speechSynthesisResult, text);
-
-                
             }
-
             SynthesizeAudioAsync();
         }
 
@@ -104,35 +97,41 @@ namespace Esercizio_2
 
         async static Task<string> ConvertToText()
         {
-            var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-            speechConfig.SpeechRecognitionLanguage = "it-IT";
+            try
+            {
+                var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
+                speechConfig.SpeechRecognitionLanguage = "it-IT";
 
-            var audioConfig = AudioConfig.FromDefaultMicrophoneInput();
-            var speechRecognizer = new SpeechRecognizer(speechConfig, audioConfig);
+                var audioConfig = AudioConfig.FromDefaultMicrophoneInput();
+                var speechRecognizer = new SpeechRecognizer(speechConfig, audioConfig);
 
-            Console.WriteLine("Speak into your microphone.");
-            var speechRecognitionResult = await speechRecognizer.RecognizeOnceAsync();
-            OutputSpeechRecognitionResult(speechRecognitionResult);
-            return speechRecognitionResult.Text;
+                Console.WriteLine("Speak into your microphone.");
+                var speechRecognitionResult = await speechRecognizer.RecognizeOnceAsync();
+                OutputSpeechRecognitionResult(speechRecognitionResult);
 
-
+                Console.WriteLine(speechRecognitionResult.Text);
+                return speechRecognitionResult.Text;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return ex.Message;
+            }
         }
 
-
-
-
-
-        private void button3_Click(object sender, EventArgs e)
+        private async void button3_Click(object sender, EventArgs e)
         {
-            var text = ConvertToText();
-            //label4.Text = text;
+            // Convert voice to text
+            var text = await ConvertToText();
+            
+            // Write on label
+            label4.Text = text.ToString();
         }
 
         private void btn_start_text_Click(object sender, EventArgs e)
         {
-
-                // Get text from the console and synthesize to the default speaker.
-                string text = txt_to_speech.Text;
+            // Get text from the console and synthesize to the default speaker.
+            string text = txt_to_speech.Text;
 
             ConvertToAudio(text);
         }
